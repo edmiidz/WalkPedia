@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Build artifacts / large data (never commit dumps or the built DB)
+*.sqlite
+*.sqlite-journal
+*.bz2
+*.gz
+*.xml
+data/
+dumps/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Mobile build outputs (filled in once app framework is chosen)
+app/build/
+app/.dart_tool/
+app/node_modules/
+app/ios/Pods/
+app/android/.gradle/
