@@ -154,7 +154,7 @@ def stream_articles(db, articles_arg, coords, max_chars, progress_every):
     else:
         stream = open(articles_arg, 'rb')
 
-    pid = title = text = None
+    pid = title = text = ns = None
     in_rev = False
     seen = matched = filled = 0
     t0 = time.time()
@@ -168,12 +168,14 @@ def stream_articles(db, articles_arg, coords, max_chars, progress_every):
             tag = localname(elem.tag)
             if event == 'start':
                 if tag == 'page':
-                    pid = title = text = None
+                    pid = title = text = ns = None
                 elif tag == 'revision':
                     in_rev = True
                 continue
             if tag == 'title':
                 title = elem.text
+            elif tag == 'ns':
+                ns = int(elem.text) if elem.text is not None else None
             elif tag == 'id' and pid is None and not in_rev:
                 pid = int(elem.text)
             elif tag == 'text':
@@ -182,7 +184,9 @@ def stream_articles(db, articles_arg, coords, max_chars, progress_every):
                 in_rev = False
             elif tag == 'page':
                 seen += 1
-                if pid in coords:
+                # Only main-namespace (ns 0) articles — skip Draft:/Wikipedia:/
+                # Category:/File:/etc. pages that also live in pages-articles.
+                if pid in coords and ns == 0:
                     matched += 1
                     if text and not text[:9].upper().startswith('#REDIRECT'):
                         summary = lead_plaintext(text, max_chars)
@@ -214,6 +218,13 @@ def stream_articles(db, articles_arg, coords, max_chars, progress_every):
 
 
 def finalize(db, stats):
+    # Drop coord-only entries (geotagged page_ids that were redirects, not in the
+    # article dump, or non-main-namespace) — nothing to narrate. Keep the R-tree
+    # in sync so spatial queries never surface a text-less point.
+    db.execute("DELETE FROM article WHERE summary IS NULL OR summary = ''")
+    db.execute("DELETE FROM article_rtree WHERE page_id NOT IN (SELECT page_id FROM article)")
+    db.commit()
+    stats['articles_final'] = db.execute("SELECT COUNT(*) FROM article").fetchone()[0]
     db.execute("CREATE INDEX IF NOT EXISTS idx_article_title ON article(title)")
     db.execute("CREATE INDEX IF NOT EXISTS idx_article_type ON article(type)")
     # Fallback for platforms whose bundled SQLite lacks the R-tree module

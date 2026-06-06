@@ -87,7 +87,9 @@ meta(key, value);  -- build provenance: counts, dump date, max_summary_chars
 ```
 
 ### Dataset composition (measured)
-~1.26M geotagged articles. Top types: landmark (194K), city (149K),
+geo_tags lists 1,255,401 geotagged pages; after keeping only main-namespace
+(ns 0) articles with usable text, the dataset holds **1,239,545 articles** in a
+**791 MB** `walkpedia.sqlite`. Top types: landmark (194K), city (149K),
 edu (41K), railwaystation (38K), mountain (27K), waterbody (20K).
 
 ---
@@ -159,10 +161,11 @@ the prototype proves out. **This is an open decision — see §8.**
 
 ## 6. Packaging the dataset (important constraint)
 
-At ~1.26M articles × ~1.5 KB plain-text summaries, `walkpedia.sqlite` is roughly
-**1.5–2 GB**. That exceeds app-store binary limits (Play Store: 200 MB base AAB;
-App Store: practical limits + cellular-download caps). So "bundled & offline"
-needs a delivery strategy that still results in a fully-offline app after setup:
+Measured: `walkpedia.sqlite` is **~791 MB** (1.24M articles, lead summaries
+capped at 1500 chars). That still exceeds the Play Store 200 MB base-AAB limit
+(so Android needs asset delivery), but is comfortably within iOS app-size limits
+and could be bundled directly on iOS. Delivery options that keep the app fully
+offline after setup:
 
 1. **First-run download** of the SQLite from a CDN/GitHub Release, stored
    locally; app is offline forever after. *(Simplest; mild caveat to "offline

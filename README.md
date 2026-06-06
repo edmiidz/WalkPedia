@@ -9,8 +9,8 @@ No network. No accounts. No AI. Just the world around you, narrated.
 > quietly reads you the opening of that article. Works in airplane mode.
 
 ## How it works
-1. A **preprocessed dataset** of ~1.26M *geotagged* Wikipedia articles is bundled
-   as a spatially-indexed SQLite database (R-tree).
+1. A **preprocessed dataset** of ~1.24M *geotagged* Wikipedia articles (a 791 MB
+   spatially-indexed SQLite database with an R-tree) is bundled with the app.
 2. The app watches your **GPS** and continuously finds the **10 closest articles
    within 50 m**.
 3. It reads the nearest one aloud with **on-device TTS**, in order of proximity.
